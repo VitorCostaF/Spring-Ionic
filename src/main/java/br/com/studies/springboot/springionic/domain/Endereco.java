@@ -9,6 +9,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
@@ -39,6 +42,7 @@ public class Endereco implements Serializable {
 
 	@ManyToOne
 	@JoinColumn(name = "cidade_id")
+//	@Cascade(CascadeType.PERSIST)
 	private Cidade cidade;
 
 	@Override

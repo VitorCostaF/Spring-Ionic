@@ -43,7 +43,7 @@ public class Pedido {
 	private Endereco enderecoEntrega;
 
 	@OneToMany(mappedBy = "id.pedido")
-	private Set<ItemPedido> items = new HashSet<>();
+	private Set<ItemPedido> itens = new HashSet<>();
 
 	public Pedido(Integer id, Date instante, Cliente cliente, Endereco enderecoEntrega) {
 		super();
@@ -53,6 +53,14 @@ public class Pedido {
 		this.enderecoEntrega = enderecoEntrega;
 	}
 
+	public double getValorTotal() {
+		double soma = 0.0;
+		for(ItemPedido item : itens) {
+			soma = soma + item.getSubTotal();
+		}
+		return soma;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
