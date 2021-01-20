@@ -3,6 +3,8 @@ package br.com.studies.springboot.springionic.services;
 import java.util.Date;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,12 @@ public class PedidoService {
 	
 	@Autowired
 	BoletoService boletoService;
+	
+	@Autowired
+	ClienteService clienteService;
+	
+	@Autowired
+	EmailService emailService;
 
 	public Pedido buscarPedidoPorId(Integer id) {
 		Optional<Pedido> pedido = pedidoRepository.findById(id);
@@ -39,9 +47,11 @@ public class PedidoService {
 				"Objeto não encotrado! Id: " + id + ", Tipo: " + Pedido.class.getName()));
 	}
 
+	@Transactional
 	public Pedido salvarPedido(Pedido pedido) {
 		pedido.setId(null);
 		pedido.setInstante(new Date());
+		pedido.setCliente(clienteService.buscarClientePorId(pedido.getCliente().getId()));
 		pedido.getPagamento().setEstado(EstadoPagamento.PENDENTE);
 		pedido.getPagamento().setPedido(pedido);
 		if(pedido.getPagamento() instanceof PagamentoComBoleto) {
@@ -54,14 +64,15 @@ public class PedidoService {
 		
 		for(ItemPedido itemPedido : pedido.getItens()) {
 			itemPedido.setDesconto(0.0);
-			itemPedido.setPreco(produtoService.buscarProdutoPorId(itemPedido.getProduto().getId()).getPreco());
+			itemPedido.setProduto(produtoService.buscarProdutoPorId(itemPedido.getProduto().getId()));
+			itemPedido.setPreco(itemPedido.getProduto().getPreco());
 			itemPedido.setPedido(pedido);
 		}
 		
 		itemPedidoRepository.saveAll(pedido.getItens());
 		
+		emailService.sendOrderConfirmationHtmlEmail(pedido);
 		return pedido;
-		
 	}
 
 }
